@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: panier-config
+  labels:
+    app: panier
+data:
+  PORT: "3001"
+  CATALOGUE_URL: "http://catalogue-service:3000"
+  COMMANDES_URL: "http://commandes-service:3002"
