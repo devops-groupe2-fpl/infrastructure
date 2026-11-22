@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: catalogue-config
+  labels:
+    app: catalogue
+data:
+  PORT: "3000"
+  DB_POOL_SIZE: "10"
