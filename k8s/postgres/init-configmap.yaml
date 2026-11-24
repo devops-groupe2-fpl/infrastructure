@@ -1,0 +1,40 @@
+apiVersion: v1
+data:
+  schema.sql: |
+    -- Catalogue database schema (PostgreSQL)
+
+    CREATE TABLE IF NOT EXISTS products (
+        id BIGSERIAL PRIMARY KEY,
+        name VARCHAR(255) NOT NULL,
+        price NUMERIC(10, 2) NOT NULL CHECK (price >= 0),
+        description TEXT NOT NULL DEFAULT '',
+        stock INTEGER NOT NULL DEFAULT 0 CHECK (stock >= 0),
+        created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_products_created_at
+        ON products (created_at);
+  seed.sql: |
+    -- Sample catalogue data for local development and tests.
+
+    INSERT INTO products (id, name, price, description, stock, created_at)
+    VALUES
+        (1, 'Laptop Pro 14', 1299.99, 'Portable laptop for professional use.', 12, '2026-01-15T10:00:00Z'),
+        (2, 'Wireless Headphones', 89.90, 'Noise-cancelling wireless headphones.', 35, '2026-01-16T10:30:00Z'),
+        (3, 'USB-C Hub', 39.50, 'Multi-port USB-C hub with HDMI and USB 3.0.', 50, '2026-01-17T14:15:00Z')
+    ON CONFLICT (id) DO UPDATE SET
+        name = EXCLUDED.name,
+        price = EXCLUDED.price,
+        description = EXCLUDED.description,
+        stock = EXCLUDED.stock,
+        created_at = EXCLUDED.created_at;
+
+    -- Keep the BIGSERIAL sequence above the explicit seed identifiers.
+    SELECT setval(
+        pg_get_serial_sequence('products', 'id'),
+        COALESCE((SELECT MAX(id) FROM products), 1),
+        true
+    );
+kind: ConfigMap
+metadata:
+  name: postgres-init
